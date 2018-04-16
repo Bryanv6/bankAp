@@ -18,7 +18,7 @@ public class User implements Serializable{
         this.username = username1;
         this.password = password1;
         this.isApproved = isApproved;
-        this.isAdmin = false;
+        this.isAdmin = isAdmin;
     }
 
     public String getUserName(){
@@ -40,7 +40,8 @@ public class User implements Serializable{
         return this.password = pw;
     }
     public void setApproved(boolean app){this.isApproved = app;}
-    public boolean isAdmin(){return isAdmin;}
+    public boolean getAdmin(){return isAdmin;}
+    public boolean setAdmin(boolean a){return this.isAdmin = a;}
 
 
 

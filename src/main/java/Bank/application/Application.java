@@ -36,8 +36,9 @@ public class Application {
         while(true) {
             System.out.println("\n1. Register");
             System.out.println("2. Login");
-            System.out.println("3. Admin Login");
-            System.out.println("4. Quit");
+            System.out.println("3. Register admin");
+            System.out.println("4. Admin Login");
+            System.out.println("5. Quit");
             choice = sc.nextInt();
 
             switch (choice) {
@@ -49,14 +50,39 @@ public class Application {
                     login();
                     break;
                 case 3:
-                    adminLogin();
+                    registerAdmin();
+                    break;
                 case 4:
+                    adminLogin();
+                    break;
+                case 5:
                     System.exit(0);
             }
         }
 
 
 
+    }
+    public static void registerAdmin(){
+        String username,password;
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Enter a username.");
+        username = sc.next();
+        System.out.println("Enter a password.");
+        password = sc.next();
+        //test if username is taken already
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setAdmin(true);
+
+        if(UserService.insertUser(user)){
+            System.out.println("Account was successfully created.");
+        }
+        else{
+            System.out.println("Account was not created.");
+        }
     }
     public static void adminLogin(){
         String username,password;
@@ -71,7 +97,7 @@ public class Application {
             System.out.println("Could not find admin user.");
             menu();
         }
-        if(user.get){}
+        if(user.getAdmin()){}
 
         int choice;
 
