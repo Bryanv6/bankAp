@@ -6,30 +6,20 @@ import Bank.service.UserService;
 
 import java.util.Scanner;
 import java.util.*;
+import org.apache.log4j.Logger;
 
-/**
- *
- * Below are the core ones (everyone MUST accomplish them)
- -account creation (admin and user role)
- --admins must approve users before they can be used
- -transactions, must support withdrawals and deposits
- -must use logging
- -everything must NOT be in the main method.
- -data must be persisted
- -collect data inputs from console
- */
 
 public class Application {
-
+    final static Logger Log = Logger.getLogger(Application.class);
     public static void main(String[] args){
-
+        Log.info("Program has started");
         menu();
 
     }
 
     public static void menu(){
 
-        int choice;
+        int choice = 0;
 
         Scanner sc = new Scanner(System.in);
 
@@ -39,8 +29,13 @@ public class Application {
             System.out.println("3. Register admin");
             System.out.println("4. Admin Login");
             System.out.println("5. Quit");
-            choice = sc.nextInt();
-
+            if(sc.hasNextInt()){
+                choice = sc.nextInt();
+            }
+            else{
+                Log.error("Enter a correct choice");
+                menu();
+            }
             switch (choice) {
 
                 case 1:
@@ -71,17 +66,17 @@ public class Application {
         username = sc.next();
         System.out.println("Enter a password.");
         password = sc.next();
-        //test if username is taken already
+
         User user = new User();
         user.setUsername(username);
         user.setPassword(password);
         user.setAdmin(true);
 
-        if(UserService.insertUser(user)){
-            System.out.println("Account was successfully created.");
+        if(UserService.insertAdmin(user)){
+            System.out.println("Admin user was successfully created.");
         }
         else{
-            System.out.println("Account was not created.");
+            Log.error("Admin user was not created");
         }
     }
     public static void adminLogin(){
@@ -93,49 +88,80 @@ public class Application {
         password = sc.next();
 
         User user = UserService.getUser(username, password);
-        if(user == null){
-            System.out.println("Could not find admin user.");
+        if(user == null || !user.getAdmin()){
+            Log.error("Could not find admin user.");
             menu();
         }
-        if(user.getAdmin()){}
 
         int choice;
 
         while(true) {
-            System.out.println("Welcome, " + user.getUserName() + ".");
+            System.out.println("\nWelcome, " + user.getUserName() + ".");
             System.out.println("\n1. View users.");
             System.out.println("2. Approve user.");
-            System.out.println("3. Delete user");
-            System.out.println("6. Logout");
+            System.out.println("3. Logout");
             choice = sc.nextInt();
 
             switch (choice) {
 
                 case 1:
-                    createAccount(user);
+                    viewUsers();
                     break;
                 case 2:
-                    deleteAccount();
+                    approveUser();
                     break;
                 case 3:
-                    withdraw(user);
-                    break;
-                case 4:
-                    deposit(user);
-                    break;
-                case 5:
-                    viewAccounts(user);
-                    break;
-                case 6:
-                    //user = null;
-                    //username = null;
-                    //password = null;
                     System.out.println("Logged out.");
                     menu();
-
+                    break;
             }
         }
 
+    }
+    public static void viewUsers(){
+
+        List<User> users = UserService.getAllUsers();
+        if(users == null){
+
+            Log.debug("Could not get users.");
+
+        }
+        else {
+            System.out.println("\nUser ID   Username    Approved");
+            System.out.println("-----------------------------------");
+            for (User u : users) {
+                if(!u.getAdmin())
+                    System.out.println(u.getUserID() + "          " + u.getUserName() + "        " + u.getApproved());
+            }
+        }
+    }
+    public static void approveUser(){
+        String username;
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter the username of the user you want to approve.");
+        username = sc.next();
+        List<User> users = UserService.getAllUsers();
+        User user = new User();
+        if(users == null){
+            System.out.println("Could not get users.");
+
+        }
+        {
+            for (User u : users) {
+                if (u.getUserName().equals(username)) {
+                    user = u;
+                }
+            }
+            if(user == null){
+                System.out.println("Could not find user.");
+            }
+            else{
+                if(UserService.updateUser(user.getUserID()))
+                    System.out.println("User has been approved.");
+                else
+                    System.out.println("User was not approved.");
+            }
+        }
     }
     public static void login(){
         String username,password;
@@ -151,6 +177,10 @@ public class Application {
             menu();
         }
 
+        if(!user.getApproved()){
+            System.out.println("You have to be approved to login.");
+            menu();
+        }
         int choice;
 
         while(true) {
@@ -181,9 +211,6 @@ public class Application {
                     viewAccounts(user);
                     break;
                 case 6:
-                    //user = null;
-                    //username = null;
-                    //password = null;
                     System.out.println("Logged out.");
                     menu();
 
@@ -202,7 +229,7 @@ public class Application {
             System.out.println("\nAccount ID             Total Amount");
             System.out.println("-----------------------------------");
             for (Accounts account : accounts) {
-                System.out.println(account.getAccountID() + "                          $" + account.getMoneyAmount() + "\n");
+                System.out.printf("%d%-25s%.2f\n\n", account.getAccountID()," ",account.getMoneyAmount());
             }
         }
 
@@ -264,14 +291,13 @@ public class Application {
         withdrawAmount = sc.nextDouble();
         newAmount = accountSelected.getMoneyAmount() - withdrawAmount;
         if(newAmount >= 0 && withdrawAmount >= 0){
-            if(UserService.updateAccount(accountNum,newAmount)){
+            if(UserService.updateAccount(accountNum,newAmount))
                 System.out.println("Withdraw successful.");
-            }
-            else{
-                System.out.println("Withdraw not successful.");
-
-            }
+            else
+                Log.debug("Withdraw not successful.");
         }
+        else
+            Log.debug("Not correct amount.\n");
 
     }
 

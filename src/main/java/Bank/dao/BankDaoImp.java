@@ -1,5 +1,6 @@
-package Bank.application;
+package Bank.dao;
 
+import Bank.dao.BankDao;
 import Bank.model.Accounts;
 import Bank.model.User;
 import Bank.util.ConnectionUtil;
@@ -23,8 +24,6 @@ public class BankDaoImp implements BankDao {
 
             return stmt.executeUpdate() > 0;
         } catch(SQLException sqle){
-
-            //put unique mess here ex. username already exists
             System.err.println(sqle.getMessage());
             System.err.println("SQL State: " + sqle.getSQLState());
             System.err.println("Error Code: " + sqle.getErrorCode());
@@ -54,16 +53,43 @@ public class BankDaoImp implements BankDao {
     }
 
     public List<User> getAllUsers() {
+        int index = 0;
+        try (Connection conn = ConnectionUtil.getConnection()) {
+            List<User> users = new ArrayList<>();
+            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM bankUsers");
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                users.add(new User(rs.getInt("user_id"), rs.getString("username"), rs.getString("userPassword"),
+                        rs.getBoolean("isApproved"), rs.getBoolean("isAdmin")));
+            }
+            return users;
+        } catch (SQLException sqle) {
+            System.err.println(sqle.getMessage());
+            System.err.println("SQL State: " + sqle.getSQLState());
+            System.err.println("Error Code: " + sqle.getErrorCode());
+        }
         return null;
     }
 
-    public boolean updateUser(User user) {
+    public boolean updateUser(int id) {
+        int index = 0;
+        try (Connection conn = ConnectionUtil.getConnection()) {
+
+            CallableStatement stmt = conn.prepareCall("{CALL update_user(?)}");
+            stmt.setInt(++index, id);
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException sqle) {
+            System.err.println(sqle.getMessage());
+            System.err.println("SQL State: " + sqle.getSQLState());
+            System.err.println("Error Code: " + sqle.getErrorCode());
+        }
         return false;
     }
 
-    public boolean deleteUser(int id) {
-        return false;
-    }
 
     @Override
     public boolean insertAccount(int id) {
@@ -127,6 +153,25 @@ public class BankDaoImp implements BankDao {
     @Override
     public boolean deleteAccount(int id) {
         return false;
+    }
+    @Override
+    public boolean insertAdmin(User user){
+
+        int index = 0;
+        try(Connection conn = ConnectionUtil.getConnection()){
+            CallableStatement stmt = conn.prepareCall("{CALL insert_admin(?,?)}");
+            stmt.setString(++index, user.getUserName());
+            stmt.setString(++index, user.getPassword());
+
+            return stmt.executeUpdate() > 0;
+        } catch(SQLException sqle){
+
+            System.err.println(sqle.getMessage());
+            System.err.println("SQL State: " + sqle.getSQLState());
+            System.err.println("Error Code: " + sqle.getErrorCode());
+        }
+        return false;
+
     }
 
 

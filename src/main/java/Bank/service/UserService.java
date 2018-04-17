@@ -1,7 +1,7 @@
 package Bank.service;
 
-import Bank.application.BankDao;
-import Bank.application.BankDaoImp;
+import Bank.dao.BankDao;
+import Bank.dao.BankDaoImp;
 import Bank.model.Accounts;
 import Bank.model.User;
 
@@ -31,5 +31,14 @@ public class UserService {
     }
     public static boolean updateAccount(int id, double newAmount){
         return dao.updateAccount(id, newAmount);
+    }
+    public static boolean updateUser(int id){
+        return dao.updateUser(id);
+    }
+    public static List<User> getAllUsers(){
+        return dao.getAllUsers();
+    }
+    public static boolean insertAdmin(User user){
+        return dao.insertAdmin(user);
     }
 }

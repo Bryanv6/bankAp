@@ -39,6 +39,7 @@ public class User implements Serializable{
     public String setPassword(String pw){
         return this.password = pw;
     }
+    public boolean getApproved(){return isApproved;}
     public void setApproved(boolean app){this.isApproved = app;}
     public boolean getAdmin(){return isAdmin;}
     public boolean setAdmin(boolean a){return this.isAdmin = a;}
