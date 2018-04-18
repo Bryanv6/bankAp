@@ -172,6 +172,7 @@ public class Application {
         password = sc.next();
 
         User user = UserService.getUser(username, password);
+
         if(user == null){
             System.out.println("Could not find user.");
             menu();
